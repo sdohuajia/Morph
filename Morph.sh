@@ -42,6 +42,9 @@ install_node() {
     cd morphl2-validator || { echo "无法进入目录 morph"; exit 1; }
     echo "已进入目录 morph。"
 
+    # 添加提示用户按任意键继续
+    read -p "请按任意键继续编辑 .env 文件..."
+
     echo "正在编辑 .env 文件..."
     nano .env
     echo "请设置您的 RPC 和钱包地址以及私钥，然后保存并退出编辑器。"
