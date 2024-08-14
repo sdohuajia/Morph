@@ -1,127 +1,60 @@
 #!/bin/bash
 
-# 使脚本在遇到任何错误时立即退出
-set -e
-
-# 函数：检查 Docker 是否已安装
+# 检查 Docker 是否安装
 check_docker() {
-    if command -v docker > /dev/null 2>&1; then
-        echo "Docker 已安装。"
-        return 0
+    if ! command -v docker &> /dev/null; then
+        echo "Docker 未安装，正在安装 Docker..."
+        # 执行安装命令
+        sudo apt update && \
+        sudo apt install -y apt-transport-https ca-certificates curl software-properties-common && \
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+        sudo apt update && \
+        sudo apt install -y docker-ce docker-ce-cli containerd.io && \
+        sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
+        sudo chmod +x /usr/local/bin/docker-compose
+        echo "Docker 安装完成。"
     else
-        echo "Docker 未安装。"
-        return 1
+        echo "Docker 已安装。"
     fi
-}
-
-# 函数：安装 Docker
-install_docker() {
-    echo "正在安装 Docker..."
-
-    # 更新包索引
-    sudo apt-get update
-
-    # 升级所有现有的软件包
-    sudo apt-get upgrade -y
-
-    # 安装必要的依赖包
-    sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
-
-    # 添加 Docker 官方的 GPG 密钥
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-
-    # 添加 Docker 仓库
-    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-
-    # 更新包索引
-    sudo apt-get update
-
-    # 安装 Docker CE
-    sudo apt-get install -y docker-ce
-
-    # 启动 Docker 服务
-    sudo systemctl start docker
-
-    # 设置 Docker 开机自启
-    sudo systemctl enable docker
 
     # 验证 Docker 安装
-    if command -v docker > /dev/null 2>&1; then
-        echo "Docker 安装成功。"
+    echo "验证 Docker 安装..."
+    if sudo docker run hello-world &> /dev/null; then
+        echo "Docker 验证成功。"
     else
-        echo "Docker 安装失败。"
-        exit 1
+        echo "Docker 验证失败。"
+    fi
+
+    # 验证 Docker Compose 安装
+    echo "验证 Docker Compose 安装..."
+    if docker-compose --version &> /dev/null; then
+        echo "Docker Compose 验证成功。"
+    else
+        echo "Docker Compose 验证失败。"
     fi
 }
 
-# 函数：克隆 Dockerfile 存储库
-clone_dockerfile_repo() {
-    echo "正在克隆 Dockerfile 存储库..."
+# 定义安装节点的函数
+install_node() {
+    echo "克隆 Dockerfile 存储库..."
     git clone --branch release/v0.2.x https://github.com/morph-l2/morph.git
-    if [ $? -eq 0 ]; then
-        echo "Dockerfile 存储库克隆成功。"
-    else
-        echo "Dockerfile 存储库克隆失败。"
-        exit 1
-    fi
-}
+    cd morph || { echo "无法进入目录 morph"; exit 1; }
+    echo "已进入目录 morph。"
 
-# 函数：进入指定目录
-enter_directory() {
-    echo "进入目录 morph/ops/publicnode..."
-    cd morph/ops/publicnode
-    if [ $? -eq 0 ]; then
-        echo "成功进入 ops/publicnode 目录。"
-    else
-        echo "无法进入 ops/publicnode 目录。"
-        exit 1
-    fi
-}
-
-# 函数：编辑 .env 文件
-edit_env_file() {
-    echo "正在打开 .env 文件进行编辑..."
+    echo "正在编辑 .env 文件..."
     nano .env
-    if [ $? -eq 0 ]; then
-        echo ".env 文件编辑完成。"
-    else
-        echo "无法编辑 .env 文件。"
-        exit 1
-    fi
+    echo "请设置您的 RPC 和钱包地址以及私钥，然后保存并退出编辑器。"
 }
 
-# 函数：运行节点
-run_node() {
-    echo "正在运行节点..."
-    make run-holesky-node
-    if [ $? -eq 0 ]; then
-        echo "节点运行成功。"
-    else
-        echo "节点运行失败。"
-        exit 1
-    fi
-}
-
-# 函数：启动节点
+# 启动节点的函数
 start_node() {
-    echo "检查 Docker 安装情况..."
-    if check_docker; then
-        echo "Docker 已安装，无需安装。"
-    else
-        install_docker
-    fi
+    echo "正在启动节点..."
+    read -p "按回车键开始构建镜像并运行容器..."
 
-    # 克隆 Dockerfile 存储库
-    clone_dockerfile_repo
-
-    # 进入指定目录
-    enter_directory
-
-    # 编辑 .env 文件
-    edit_env_file
-
-    # 运行节点
-    run_node
+    # 建镜像并运行容器
+    docker compose up --build -d
+    echo "节点正在启动。"
 }
 
 # 主菜单函数
@@ -135,15 +68,21 @@ main_menu() {
         echo "节点社区 Discord 社群: https://discord.gg/GbMV5EcNWF"
         echo "退出脚本，请按键盘 ctrl+c 退出即可"
         echo "请选择要执行的操作:"
-        echo "1) 启动节点"
-        echo "2) 退出"
+        echo "1) 安装节点"
+        echo "2) 启动节点"
+        echo "3) 退出"
         echo
         read -p "请选择一个选项: " choice
         case $choice in
             1)
-                start_node
+                check_docker
+                install_node
                 ;;
             2)
+                check_docker
+                start_node
+                ;;
+            3)
                 echo "退出脚本。"
                 exit 0
                 ;;
