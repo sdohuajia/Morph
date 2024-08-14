@@ -32,6 +32,7 @@ check_docker() {
         echo "Docker Compose 验证成功。"
     else
         echo "Docker Compose 验证失败。"
+        exit 1
     fi
 }
 
@@ -39,8 +40,13 @@ check_docker() {
 install_node() {
     echo "克隆 Dockerfile 存储库..."
     git clone https://github.com/kodaicoder/morphl2-validator.git
-    cd morphl2-validator || { echo "无法进入目录 morph"; exit 1; }
-    echo "已进入目录 morph。"
+    if [ $? -ne 0 ]; then
+        echo "克隆失败，请检查网络连接或存储库 URL。"
+        exit 1
+    fi
+
+    cd morphl2-validator || { echo "无法进入目录 morphl2-validator"; exit 1; }
+    echo "已进入目录 morphl2-validator。"
 
     # 添加提示用户按任意键继续
     read -p "请按任意键继续编辑 .env 文件..."
@@ -56,14 +62,14 @@ start_node() {
     read -p "按回车键开始构建镜像并运行容器..."
 
     # 建镜像并运行容器
-    docker compose up --build -d
+    docker-compose up --build -d
     echo "节点正在启动。"
 }
 
 # 更新 .env 文件的函数
 update_env() {
     echo "停止当前 Docker 容器..."
-    docker compose stop
+    docker-compose stop
     echo "请按任意键继续更新 .env 文件..."
     read -p "按任意键继续..."
 
@@ -72,14 +78,14 @@ update_env() {
     echo "请设置您的 RPC 和钱包地址以及私钥，然后保存并退出编辑器。"
 
     echo "重新启动 Docker 容器..."
-    docker compose up -d
+    docker-compose up -d
     echo ".env 文件已更新并且容器已重新启动。"
 }
 
 # 删除节点的函数
 delete_node() {
     echo "停止并删除旧容器..."
-    docker compose down
+    docker-compose down
     echo "节点已删除。"
 }
 
@@ -112,4 +118,22 @@ main_menu() {
                 ;;
             3)
                 check_docker
-    
+                update_env
+                ;;
+            4)
+                check_docker
+                delete_node
+                ;;
+            5)
+                echo "退出脚本。"
+                exit 0
+                ;;
+            *)
+                echo "无效选项，请选择 1-5 之间的数字。"
+                ;;
+        esac
+    done
+}
+
+# 运行主菜单
+main_menu
