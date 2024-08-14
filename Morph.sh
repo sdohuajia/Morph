@@ -1,12 +1,5 @@
 #!/bin/bash
 
-# 检查是否以root用户运行脚本
-if [ "$(id -u)" != "0" ]; then
-    echo "此脚本需要以root用户权限运行。"
-    echo "请尝试使用 'sudo -i' 命令切换到root用户，然后再次运行此脚本。"
-    exit 1
-fi
-
 # 检查 Docker 是否安装
 check_docker() {
     if ! command -v docker &> /dev/null; then
@@ -67,6 +60,29 @@ start_node() {
     echo "节点正在启动。"
 }
 
+# 更新 .env 文件的函数
+update_env() {
+    echo "停止当前 Docker 容器..."
+    docker compose stop
+    echo "请按任意键继续更新 .env 文件..."
+    read -p "按任意键继续..."
+
+    echo "正在编辑 .env 文件..."
+    nano .env
+    echo "请设置您的 RPC 和钱包地址以及私钥，然后保存并退出编辑器。"
+
+    echo "重新启动 Docker 容器..."
+    docker compose up -d
+    echo ".env 文件已更新并且容器已重新启动。"
+}
+
+# 删除节点的函数
+delete_node() {
+    echo "停止并删除旧容器..."
+    docker compose down
+    echo "节点已删除。"
+}
+
 # 主菜单函数
 main_menu() {
     while true; do
@@ -80,7 +96,9 @@ main_menu() {
         echo "请选择要执行的操作:"
         echo "1) 安装节点"
         echo "2) 启动节点"
-        echo "3) 退出"
+        echo "3) 更新 .env 文件"
+        echo "4) 删除节点"
+        echo "5) 退出"
         echo
         read -p "请选择一个选项: " choice
         case $choice in
@@ -93,15 +111,5 @@ main_menu() {
                 start_node
                 ;;
             3)
-                echo "退出脚本。"
-                exit 0
-                ;;
-            *)
-                echo "无效的选项，请重新选择。"
-                ;;
-        esac
-    done
-}
-
-# 主程序
-main_menu
+                check_docker
+    
