@@ -24,6 +24,7 @@ check_docker() {
         echo "Docker 验证成功。"
     else
         echo "Docker 验证失败。"
+        exit 1
     fi
 
     # 验证 Docker Compose 安装
@@ -54,6 +55,7 @@ install_node() {
     echo "正在编辑 .env 文件..."
     nano .env
     echo "请设置您的 RPC 和钱包地址以及私钥，然后保存并退出编辑器。"
+    echo "节点安装完成。"
 }
 
 # 启动节点的函数
@@ -61,7 +63,7 @@ start_node() {
     echo "正在启动节点..."
     read -p "按回车键开始构建镜像并运行容器..."
 
-    # 建镜像并运行容器
+    # 构建镜像并运行容器
     docker-compose up --build -d
     echo "节点正在启动。"
 }
