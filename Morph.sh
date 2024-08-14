@@ -38,8 +38,8 @@ check_docker() {
 # 定义安装节点的函数
 install_node() {
     echo "克隆 Dockerfile 存储库..."
-    git clone --branch release/v0.2.x https://github.com/morph-l2/morph.git
-    cd morph || { echo "无法进入目录 morph"; exit 1; }
+    git clone https://github.com/kodaicoder/morphl2-validator.git
+    cd morphl2-validator || { echo "无法进入目录 morph"; exit 1; }
     echo "已进入目录 morph。"
 
     echo "正在编辑 .env 文件..."
