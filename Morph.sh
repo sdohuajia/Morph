@@ -74,7 +74,9 @@ delete_node() {
     echo "停止并删除旧容器..."
     docker-compose down
     echo "节点已删除。"
+    read -p "按任意键返回主菜单..."
 }
+
 
 # 主菜单函数
 main_menu() {
