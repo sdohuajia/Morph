@@ -46,7 +46,16 @@ check_docker() {
     fi
 }
 
-# 定义安装节点的函数
+# 启动节点
+start_node() {
+    echo "正在启动节点..."
+    read -p "按回车键开始构建镜像并运行容器..."
+
+    # 调用 install_node 函数
+    install_node
+}
+
+# 克隆 Dockerfile 存储库并安装节点
 install_node() {
     echo "克隆 Dockerfile 存储库..."
     git clone https://github.com/kodaicoder/morphl2-validator.git
@@ -58,24 +67,18 @@ install_node() {
     cd morphl2-validator || { echo "无法进入目录 morphl2-validator"; exit 1; }
     echo "已进入目录 morphl2-validator。"
 
-    # 添加提示用户按任意键继续
     read -p "请按任意键继续编辑 .env 文件..."
 
     echo "正在编辑 .env 文件..."
     nano .env
     echo "请设置您的 RPC 和钱包地址以及私钥，然后保存并退出编辑器。"
     echo "节点安装完成。"
-}
 
-# 启动节点的函数
-start_node() {
-    echo "正在启动节点..."
-    read -p "按回车键开始构建镜像并运行容器..."
-
-    # 构建镜像并运行容器
+    echo "构建镜像并运行容器..."
     docker-compose up --build -d
     echo "节点正在启动。"
 }
+
 
 # 更新 .env 文件的函数
 update_env() {
