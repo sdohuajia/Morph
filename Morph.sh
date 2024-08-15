@@ -29,6 +29,15 @@ check_docker() {
 
     # 验证 Docker Compose 安装
     echo "验证 Docker Compose 安装..."
+    if ! command -v docker-compose &> /dev/null; then
+        echo "Docker Compose 未安装，正在安装 Docker Compose..."
+        sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
+        echo "Docker Compose 安装完成。"
+    fi
+
+    # 再次验证 Docker Compose 安装
+    echo "再次验证 Docker Compose 安装..."
     if docker-compose --version &> /dev/null; then
         echo "Docker Compose 验证成功。"
     else
