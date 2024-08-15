@@ -10,9 +10,7 @@ check_docker() {
         curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
         echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null && \
         sudo apt update && \
-        sudo apt install -y docker-ce docker-ce-cli containerd.io && \
-        sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
-        sudo chmod +x /usr/local/bin/docker-compose
+        sudo apt install -y docker-ce docker-ce-cli containerd.io
         echo "Docker 安装完成。"
     else
         echo "Docker 已安装。"
@@ -28,45 +26,38 @@ check_docker() {
     fi
 
     # 验证 Docker Compose 安装
-    echo "验证 Docker Compose 安装..."
     if ! command -v docker-compose &> /dev/null; then
         echo "Docker Compose 未安装，正在安装 Docker Compose..."
         sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
         sudo chmod +x /usr/local/bin/docker-compose
         echo "Docker Compose 安装完成。"
+    else
+        echo "Docker Compose 已安装。"
     fi
-
-# 启动节点
-start_node() {
-    echo "正在启动节点..."
-    read -p "按回车键开始构建镜像并运行容器..."
-
-    # 调用 install_node 函数
-    install_node
 }
 
-# 克隆 Dockerfile 存储库并安装节点
+# 安装节点的函数
 install_node() {
     echo "克隆 Dockerfile 存储库..."
     git clone https://github.com/kodaicoder/morphl2-validator.git
-    if [ $? -ne 0 ]; then
-        echo "克隆失败，请检查网络连接或存储库 URL。"
-        exit 1
-    fi
+    cd morphl2-validator || exit
 
-    cd morphl2-validator || { echo "无法进入目录 morphl2-validator"; exit 1; }
-    echo "已进入目录 morphl2-validator。"
-
-    read -p "请按任意键继续编辑 .env 文件..."
-
-    echo "正在编辑 .env 文件..."
+    echo "请设置您的 RPC 和钱包地址以及私钥..."
     nano .env
-    echo "请设置您的 RPC 和钱包地址以及私钥，然后保存并退出编辑器。"
-    echo "节点安装完成。"
+
+    echo "请按 Ctrl+X 退出编辑器并保存更改，然后按任意键继续..."
+    read -p "按任意键继续..."
 
     echo "构建镜像并运行容器..."
-    docker-compose up --build -d
-    echo "节点正在启动。"
+    docker compose up --build -d
+    echo "节点已安装并启动。"
+}
+
+# 启动节点的函数
+start_node() {
+    echo "启动 Docker 容器..."
+    docker compose up -d
+    echo "节点已启动。"
 }
 
 
