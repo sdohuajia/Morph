@@ -36,16 +36,6 @@ check_docker() {
         echo "Docker Compose 安装完成。"
     fi
 
-    # 再次验证 Docker Compose 安装
-    echo "再次验证 Docker Compose 安装..."
-    if docker-compose --version &> /dev/null; then
-        echo "Docker Compose 验证成功。"
-    else
-        echo "Docker Compose 验证失败。"
-        exit 1
-    fi
-}
-
 # 启动节点
 start_node() {
     echo "正在启动节点..."
