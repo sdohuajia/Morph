@@ -53,13 +53,6 @@ install_node() {
     echo "节点已安装并启动。"
 }
 
-# 启动节点的函数
-start_node() {
-    echo "启动 Docker 容器..."
-    docker compose up -d
-    echo "节点已启动。"
-}
-
 # 更新 .env 文件的函数
 update_env() {
     echo "停止当前 Docker 容器..."
@@ -95,10 +88,9 @@ main_menu() {
         echo "退出脚本，请按键盘 ctrl+c 退出即可"
         echo "请选择要执行的操作:"
         echo "1) 安装节点"
-        echo "2) 启动节点"
-        echo "3) 更新 .env 文件"
-        echo "4) 删除节点"
-        echo "5) 退出"
+        echo "2) 更新 .env 文件"
+        echo "3) 删除节点"
+        echo "4) 退出"
         echo
         read -p "请选择一个选项: " choice
         case $choice in
@@ -107,20 +99,17 @@ main_menu() {
                 install_node
                 ;;
             2)
-                start_node
-                ;;
-            3)
                 update_env
                 ;;
-            4)
+            3)
                 delete_node
                 ;;
-            5)
+            4)
                 echo "退出脚本。"
                 exit 0
                 ;;
             *)
-                echo "无效选项，请选择 1-5 之间的数字。"
+                echo "无效选项，请选择 1-4 之间的数字。"
                 ;;
         esac
     done
