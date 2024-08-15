@@ -60,7 +60,6 @@ start_node() {
     echo "节点已启动。"
 }
 
-
 # 更新 .env 文件的函数
 update_env() {
     echo "停止当前 Docker 容器..."
@@ -108,15 +107,12 @@ main_menu() {
                 install_node
                 ;;
             2)
-                check_docker
                 start_node
                 ;;
             3)
-                check_docker
                 update_env
                 ;;
             4)
-                check_docker
                 delete_node
                 ;;
             5)
